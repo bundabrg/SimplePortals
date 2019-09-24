@@ -146,7 +146,7 @@ public class Portal {
 
 				}
 
-				pluginInstance.getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
+				//pluginInstance.getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
 			}
 
 			pluginInstance.getManager().switchServer(player, getServerSwitchName());
