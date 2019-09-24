@@ -36,6 +36,7 @@ public class Manager {
 	private List<Portal> portals;
 	private HashMap<UUID, TaskHolder> visualTasks;
 	private HashMap<UUID, SerializableLocation> smartTransferMap;
+	private HashMap<UUID, Location> quitLocations;
 
 	private ParticleHandler particleHandler;
 	private JSONHandler jsonHandler;
@@ -48,6 +49,7 @@ public class Manager {
 		visualTasks = new HashMap<>();
 		portals = new ArrayList<>();
 		smartTransferMap = new HashMap<>();
+		quitLocations = new HashMap<>();
 
 		setupPackets();
 	}
@@ -248,30 +250,41 @@ public class Manager {
 		return false;
 	}
 
-	@SuppressWarnings("deprecation")
 	public void teleportPlayerWithEntity(Player player, Location location) {
-		if (player.getVehicle() != null && pluginInstance.getConfig().getBoolean("vehicle-teleportation")) {
-			Entity entity = player.getVehicle();
-			if (pluginInstance.getServerVersion().startsWith("v1_11")
-					|| pluginInstance.getServerVersion().startsWith("v1_12")
-					|| pluginInstance.getServerVersion().startsWith("v1_13")
-					|| pluginInstance.getServerVersion().startsWith("v1_14"))
-				entity.removePassenger(player);
-			else
-				entity.setPassenger(null);
-			if (entity.getPassengers().contains(player))
-				entity.eject();
+		teleportPlayerWithEntity(player, location, false);
+	}
 
-			player.teleport(location);
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					entity.teleport(player.getLocation());
-					entity.addPassenger(player);
-				}
-			}.runTaskLater(pluginInstance, 1);
-		} else
-			player.teleport(location);
+	@SuppressWarnings("deprecation")
+	public void teleportPlayerWithEntity(Player player, Location location, boolean onQuit) {
+		// Teleport Immediately
+		if (!onQuit) {
+			if (player.getVehicle() != null && pluginInstance.getConfig().getBoolean("vehicle-teleportation")) {
+				Entity entity = player.getVehicle();
+				if (pluginInstance.getServerVersion().startsWith("v1_11")
+						|| pluginInstance.getServerVersion().startsWith("v1_12")
+						|| pluginInstance.getServerVersion().startsWith("v1_13")
+						|| pluginInstance.getServerVersion().startsWith("v1_14"))
+					entity.removePassenger(player);
+				else
+					entity.setPassenger(null);
+				if (entity.getPassengers().contains(player))
+					entity.eject();
+
+				player.teleport(location);
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						entity.teleport(player.getLocation());
+						entity.addPassenger(player);
+					}
+				}.runTaskLater(pluginInstance, 1);
+			} else
+				player.teleport(location);
+			return;
+		}
+
+		// Set teleport on quit
+		quitLocations.put(player.getUniqueId(), location);
 	}
 
 	public boolean isFacingPortal(Player player, Portal portal, int range) {
@@ -573,6 +586,10 @@ public class Manager {
 
 	public HashMap<UUID, SerializableLocation> getSmartTransferMap() {
 		return smartTransferMap;
+	}
+
+	public HashMap<UUID, Location> getQuitLocations() {
+		return quitLocations;
 	}
 
 }

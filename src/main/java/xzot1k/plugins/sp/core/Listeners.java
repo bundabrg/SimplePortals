@@ -18,7 +18,9 @@ import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Listeners implements Listener {
 
@@ -202,6 +204,13 @@ public class Listeners implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onQuit(PlayerQuitEvent e) {
 		pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
+
+		// If a quitLocation is set, teleport player now
+		Map<UUID, Location> quitLocations = pluginInstance.getManager().getQuitLocations();
+		if (quitLocations.containsKey(e.getPlayer().getUniqueId())) {
+			pluginInstance.getManager().teleportPlayerWithEntity(e.getPlayer(), quitLocations.get(e.getPlayer().getUniqueId()));
+			quitLocations.remove(e.getPlayer().getUniqueId());
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
