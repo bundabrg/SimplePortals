@@ -155,7 +155,7 @@
         </plugins>
 
         <directory>target</directory>
-        <finalName>${project.artifactId}-${project.parent.version}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
 
         <resources>
             <resource>
